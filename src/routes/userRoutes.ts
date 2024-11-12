@@ -1,13 +1,16 @@
 import { Router } from 'express';
-import {createUser, getUsers} from "../controller/userController";
+import {createUser, getChatId, getUsers, saveChatId} from "../controller/userController";
 
 
-const router: Router = Router();
+const router: Router = Router({strict: false});
 
-// Получение списка пользователей
 router.get('/', getUsers);
 
-// Создание нового пользователя
+
 router.post('/', createUser);
+
+router.post('/sendChatId', saveChatId);
+
+router.get('/getChatId', getChatId);
 
 export default router;

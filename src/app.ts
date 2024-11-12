@@ -1,8 +1,11 @@
 import express, {Application, Request, Response} from 'express';
 import userRoutes from './routes/userRoutes';
 import './bot/bot';
+import cors from "cors";
+
 
 const app: Application = express();
+app.use(cors());
 
 const PORT: number = parseInt(process.env.PORT as string, 10) || 3000;
 

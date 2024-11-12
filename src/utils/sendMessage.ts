@@ -15,10 +15,10 @@ export async function sendMessage(bot: TelegramBot, userId: string | number, tex
 
 export const formattingToSendMessage = (msg:BotMessage) => {
     const message = `
-        *ID пользователя*: ${msg.from?.id}
-        *Имя Фамилия*: ${msg?.from?.first_name} ${msg?.from?.last_name || ''}
-        *Тг/ник*: ${msg?.from?.username ? `@${msg?.from?.username}` : 'нет'}
-        *Сообщение*: ${msg.text?.trim() ?? msg.caption?.trim()}
+<i>ID пользователя:</i> <b>${msg.from?.id}</b>
+<i>Имя Фамилия:</i> <b>${msg?.from?.first_name} ${msg?.from?.last_name || ''}</b>
+<i>Тг/ник:</i> <b>${msg?.from?.username ? `@${msg?.from?.username}` : 'нет'}</b>
+<i>Сообщение:</i> <b>${msg.text?.trim() ?? msg.caption?.trim()}</b>
     `
     return message
 }

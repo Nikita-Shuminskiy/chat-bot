@@ -1,4 +1,3 @@
-// src/types/bot.ts
 import TelegramBot from 'node-telegram-bot-api';
 
 export interface BotMessage extends TelegramBot.Message {
