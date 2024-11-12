@@ -1,11 +1,13 @@
 import express from 'express';
 import cors from 'cors';
+import dotenv from 'dotenv';
 import TelegramBot from 'node-telegram-bot-api';
 
+dotenv.config()
 const app = express();
-const port = 3000;
 const CHANNEL_SUPPORT_ID = "-1002350349977";
 const TOKEN_BOT = "7385212378:AAGIpAe4vMYUtxL1Q7CsqYfZbElt-g8-3tY";
+
 
 app.use(express.json());
 app.use(cors());
@@ -23,7 +25,8 @@ bot.getChat(CHANNEL_SUPPORT_ID)
         console.error('Ошибка при получении ID канала:', error)
     })*/
 
-bot.onText(/\/start/,  async (msg) => {
+bot.onText(/\/start/, async (msg) => {
+    console.log('1131')
     const chatId = msg.chat.id;
     await bot.sendMessage(chatId, 'Добро пожаловать! Выберите "Написать в поддержку", чтобы связаться с нами.', {
         reply_markup: {
@@ -37,11 +40,12 @@ bot.onText(/\/start/,  async (msg) => {
 // Обработка всех сообщений от пользователя
 bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
-    const messageText = msg.text?.trim();
+    const messageText = msg.text?.trim() ?? ''
+    const photo = Array.isArray(msg.photo) && msg.photo.length > 0 ? msg.photo[msg.photo.length - 1].file_id : null;
 
     if (messageText === 'Написать в поддержку') {
         await sendMessage(chatId, 'Пожалуйста, напишите ваш вопрос, и наша поддержка свяжется с вами в ближайшее время.');
-    } else if (messageText && messageText !== '/start') {
+    } else if (messageText && messageText !== '/start' || photo) {
         const message = `
 <i>ID пользователя:</i> <b>${msg.from?.id}</b>
 <i>Имя Фамилия:</i> <b>${msg?.from?.first_name} ${msg?.from?.last_name || ''}</b>
@@ -49,7 +53,7 @@ bot.on('message', async (msg) => {
 <i>Сообщение:</i> <b>${messageText}</b>
     `
         try {
-            await sendMessage(CHANNEL_SUPPORT_ID, message);
+            await sendMessage(CHANNEL_SUPPORT_ID, message, photo);
             await sendMessage(chatId, 'Ваше сообщение отправлено в поддержку.');
         } catch (error) {
             console.error('Ошибка при отправке сообщения в поддержку:', messageText);
@@ -57,6 +61,7 @@ bot.on('message', async (msg) => {
         }
     }
 });
+
 function extractUserIdFromText(text) {
     const match = text?.match(/ID\s+(\d+):/);
     return match ? match[1] : null;
@@ -93,9 +98,10 @@ bot.on('channel_post', async (msg) => {
 
 
 async function sendMessage(userId, text, photo) {
+    console.log(text)
     try {
         if (photo) {
-            await bot.sendPhoto(userId, photo, { caption: text });
+            await bot.sendPhoto(userId, photo, {caption: text});
         } else {
             await bot.sendMessage(userId, text, {parse_mode: 'HTML'});
         }
@@ -106,8 +112,11 @@ async function sendMessage(userId, text, photo) {
     }
 }
 
+app.listen(process.env.PORT || 3000, (error) => {
+    if (error) return console.log(`Error: ${error}`);
+    console.log(`Server listening on port ${process.env.PORT || 3000}`);
+});
 
-
-app.listen(port, () => {
-    console.log(`Сервер запущен на http://localhost:${port}`);
+app.get("/", (request, response) => {
+    response.status(200).send("Hello World");
 });
