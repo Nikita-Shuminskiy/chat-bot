@@ -3,16 +3,29 @@ import {extractUserIdFromReply, extractUserIdFromText} from './utils';
 import {formattingToSendMessage, sendMessage} from '../utils/sendMessage';
 import {BotMessage} from '../types/bot';
 import commonApi from "../api/api";
+import app from "../app";
 
 
 const CHANNEL_SUPPORT_ID = process.env.CHANNEL_SUPPORT_ID ?? 0;
 const TOKEN_BOT = process.env.TOKEN_BOT ?? '';
+const PUZZLEBOT_WEBHOOK_URL = 'yRRfDYu088Xl2vYj708wSc1YHSKnEsjc';
 
 export const bot = new TelegramBot(TOKEN_BOT, {polling: true});
 
-const sessions: { [key: string]: { stage: string, attempts?: number } } = {};
+bot.setWebHook(`${PUZZLEBOT_WEBHOOK_URL}/bot${TOKEN_BOT}`).then(r => {
+    console.log(r, 'setWebHook')
+}).catch(e => {
+    console.log(e, 'error')
+})
 
-bot.onText(/\/start/, async (msg) => {
+app.post(`/bot${TOKEN_BOT}`, (req, res) => {
+    const { body } = req;
+    console.log(body, 'bodybodybodybody')
+    bot.processUpdate(body);
+    res.sendStatus(200);
+});
+
+/*bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id;
 
     try {
@@ -28,65 +41,12 @@ bot.onText(/\/start/, async (msg) => {
             });
         } else {
             await bot.sendMessage(chatId, 'Вы не залогинены. Пожалуйста, введите ваш номер телефона для авторизациив формате 7 *** *** ** **');
-            sessions[chatId] = { stage: 'awaiting_phone' };
         }
 
     } catch (error) {
         console.error('Error checking login status', error);
     }
 });
-
-/*bot.on('message', async (msg) => {
-    const chatId = msg.chat.id;
-    const text = msg.text?.trim() ?? '';
-
-    const session = sessions[chatId];
-
-    if (!session) return;
-
-    try {
-        if (session.stage === 'awaiting_phone') {
-            // Ожидаем номер телефона
-            const phone = Number(text.replace(/\D/g, ''))
-            console.log(phone)
-            await commonApi.sendAuthPhone({ phone });
-            await bot.sendMessage(chatId, 'Код отправлен. Введите код из СМС.');
-            sessions[chatId] = { stage: 'awaiting_code', attempts: 3 }; // Обновляем стадию на ожидание кода, добавляем количество попыток
-        } else if (session.stage === 'awaiting_code') {
-            // Ожидаем код СМС
-            const code = parseInt(text, 10);
-
-            const response = await commonApi.sendAuthCode({ code });
-
-            if (response.data) {
-                await bot.sendMessage(chatId, 'Вы успешно авторизованы! Выберите "Написать в поддержку", чтобы связаться с нами.', {
-                    reply_markup: {
-                        keyboard: [[{ text: 'Написать в поддержку' }]],
-                        resize_keyboard: true,
-                        one_time_keyboard: true,
-                    },
-                });
-                delete sessions[chatId]; // Удаляем сессию после успешной авторизации
-            } else {
-                // Если код неверный
-                session.attempts! -= 1;
-
-                if (session.attempts! > 0) {
-                    await bot.sendMessage(chatId, `Код неверный. У вас осталось ${session.attempts} попыток. Введите код ещё раз.`);
-                } else {
-                    // Если попытки закончились
-                    await bot.sendMessage(chatId, 'Превышено количество попыток. Пожалуйста, введите ваш номер телефона снова.');
-                    sessions[chatId] = { stage: 'awaiting_phone' }; // Сбрасываем на ввод номера телефона
-                }
-            }
-        }
-    } catch (error) {
-        console.error('Authorization error:', error);
-        await bot.sendMessage(chatId, 'Произошла ошибка при авторизации. Попробуйте еще раз позже.');
-        delete sessions[chatId]; // Очистка сессии при ошибке
-    }
-});*/
-
 
 bot.on('message', async (msg: BotMessage) => {
     const chatId = msg.chat.id;
@@ -128,7 +88,7 @@ bot.on('channel_post', async (msg) => {
     }
 
     if (userId) {
-        const responseText = text?.replace(/ID\s+\d+:\s*/, '').trim(); // Убираем "ID <user_id>:" из текста ответа
+        const responseText = text?.replace(/ID\s+\d+:\s*!/, '').trim(); // Убираем "ID <user_id>:" из текста ответа
         await bot.sendMessage(userId, 'Ответ поддержки');
         if (photo) {
             await bot.sendPhoto(userId, photo, {caption: responseText});
@@ -140,5 +100,5 @@ bot.on('channel_post', async (msg) => {
     } else {
         console.error('Не удалось определить ID пользователя для ответа.');
     }
-});
+});*/
 

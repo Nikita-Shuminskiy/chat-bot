@@ -26,7 +26,6 @@ bot.getChat(CHANNEL_SUPPORT_ID)
     })*/
 
 bot.onText(/\/start/, async (msg) => {
-    console.log('1131')
     const chatId = msg.chat.id;
     await bot.sendMessage(chatId, 'Добро пожаловать! Выберите "Написать в поддержку", чтобы связаться с нами.', {
         reply_markup: {
@@ -36,6 +35,7 @@ bot.onText(/\/start/, async (msg) => {
         },
     });
 });
+
 
 // Обработка всех сообщений от пользователя
 bot.on('message', async (msg) => {
@@ -47,11 +47,11 @@ bot.on('message', async (msg) => {
         await sendMessage(chatId, 'Пожалуйста, напишите ваш вопрос, и наша поддержка свяжется с вами в ближайшее время.');
     } else if (messageText && messageText !== '/start' || photo) {
         const message = `
-<i>ID пользователя:</i> <b>${msg.from?.id}</b>
-<i>Имя Фамилия:</i> <b>${msg?.from?.first_name} ${msg?.from?.last_name || ''}</b>
-<i>Тг/ник:</i> <b>${msg?.from?.username ? `@${msg?.from?.username}` : 'нет'}</b>
-<i>Сообщение:</i> <b>${messageText}</b>
-    `
+<b>ID пользователя:</b> ${msg.from?.id}
+<b>Имя Фамилия:</b> ${msg.from?.first_name} ${msg.from?.last_name || ''}
+<b>Тг/ник:</b> ${msg.from?.username ? `@${msg.from?.username}` : 'нет'}
+<b>Сообщение:</b> ${messageText}
+`;
         try {
             await sendMessage(CHANNEL_SUPPORT_ID, message, photo);
             await sendMessage(chatId, 'Ваше сообщение отправлено в поддержку.');
